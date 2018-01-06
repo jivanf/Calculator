@@ -1,0 +1,61 @@
+/*
+ * Empty Stylesheet file.
+ */
+
+@font-face {
+    font-family: 'Roboto';
+    src: url('Roboto-Thin.ttf');
+}
+
+
+.calculator {
+    -fx-background-color: #2e4057;
+}
+
+.calculator-button {
+    -fx-border-color: black;
+    -fx-border-width: 1px 1px 0px 0px;
+    -fx-text-fill: white;
+
+
+
+
+}
+
+.calculator-operation-button {
+    -fx-background-color: #f18f01;
+    -fx-border-color: black;
+    -fx-border-width: 1px 1px 0px 0px;
+    -fx-text-fill: white;
+}
+
+.calculator-top-button {
+    -fx-background-color: #2f2d2e;
+    -fx-border-color: black;
+    -fx-border-width: 0px 1px 0px 0px;
+    -fx-text-fill: white;
+
+}
+
+.toggle {
+    -fx-background-color: #2f2d2e;
+    -fx-border-color: black;
+    -fx-border-width: 0px 1px 0px 0px;
+}
+
+.calculator-input {
+    -fx-background-color: #c4cbca;
+
+
+}
+
+#del {
+    -fx-graphic: url("img/icons8-clear_symbol_filled.png");
+}
+
+
+
+.mainFxmlClass {
+      
+}
+
