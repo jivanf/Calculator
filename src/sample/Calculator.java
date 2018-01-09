@@ -1,6 +1,5 @@
 package sample;
 
-import java.math.*;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.regex.*;
@@ -8,16 +7,13 @@ import java.util.regex.*;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import javafx.scene.control.*;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Alert.AlertType;
 
+import javafx.scene.layout.GridPane;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 
 /*
@@ -33,8 +29,7 @@ public class Calculator {
 
     private double ans;
     public boolean clearNext = false;
-    private final Pattern funcSavePattern = Pattern.compile("\\w+\\([a-zA-Z,]+\\)=[A-Za-z0-9-!$%^&*()+ {}|/~=`:'÷<>?,.]+");
-    final Pattern funcEvalPattern = Pattern.compile("\\w+\\([A-Za-z0-9-!$%^&*()÷+ {}|/~=`:'<>?,.]+\\)");
+
     private ArrayList<String> functions = new ArrayList<String>();
     public TextField expField;
 
@@ -64,8 +59,7 @@ public class Calculator {
     public String filterExpression(String exp) {
         final Pattern sciFunc = Pattern.compile("([(]+?[a-zA-z]+\\([a-zA-Z0-9^*+/#÷[(][)]]+[)]?)");
 
-        String filteredExp = exp.replaceAll("÷", "/");
-        filteredExp = exp.replaceAll("Ans", Double.toString(ans));
+        String filteredExp = exp.replaceAll("Ans", Double.toString(ans));
         filteredExp = filteredExp.replaceAll("Ran#", Double.toString(Math.random()));
         filteredExp = filteredExp.replaceAll("√",   "sqrt");
         filteredExp = filteredExp.replaceAll("log", "log10");
@@ -78,9 +72,8 @@ public class Calculator {
                 String functionName = e.substring(0, e.indexOf("("));
                 for (String function : functionArray) {
                     if (function.substring(0, function.indexOf("(")).equals(functionName)) {
-                        System.out.println("About to replace..." + e);
-                        System.out.println("filteredExp before replace: " + filteredExp);
-                        filteredExp = filteredExp.replace(e, Double.toString(evaluateFunction(expField, e)));
+
+                            filteredExp = filteredExp.replace(e, Double.toString(evaluateFunction(expField, e)));
                     }
                 }
 
@@ -88,28 +81,7 @@ public class Calculator {
             }
         }
 
-//        while (sciFuncMatcher.find()) {
-//            String group = sciFuncMatcher.group();
-//
-//
-////            if (!")".equals(Character.toString(group.charAt(group.length() - 1)))) {
-////                group.insert(group.length(), ")");
-////            }
-//
-//            System.out.println("Original group: " + group);
-//
-//            String filteredGroup = group.replaceAll("\\(", "");
-//            filteredGroup = filteredGroup.replaceAll("\\)", "");
-//
-//            System.out.println("Filtered group: " + filteredGroup);
-//            System.out.println("Pattern: " + Pattern.quote(group));
-//
-//            filteredExp = filteredExp.replace(group, filteredGroup);
-//
-//        }
 
-
-        System.out.println("filteredExp is: " + filteredExp);
         return filteredExp;
     }
 
@@ -119,27 +91,78 @@ public class Calculator {
         String splitFunction[] = exp.split("=");
         for (String i : this.functionArray) {
             String splitI[] = i.split("=");
-            if (splitFunction[0].equals(splitI[0])) {
-                this.functionArray.remove(i);
-                System.out.println(i + " was overridden with " + exp);
+            if (splitFunction[0].substring(0, splitFunction[0].indexOf("(")).equals(splitI[0].substring(0, splitI[0].indexOf("(")))) {
+                Alert alert = new Alert(AlertType.CONFIRMATION);
+                alert.setTitle("Funciones");
+                alert.setHeaderText("Sobrescribir función");
+                alert.setContentText("¿Estas seguro que quieres sobrescribir " + i + " con " + exp + " ?");
+
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.get() == ButtonType.OK){
+                    this.functionArray.remove(i);
+                }
+
+
             }
         }
         this.functionArray.add(exp.trim());
-        System.out.println(expField.getText());
         expField.setText("");
+    }
+
+    public void showFunctions() {
+        TextArea textArea = new TextArea();
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+        GridPane gridPane = new GridPane();
+        gridPane.setMaxWidth(Double.MAX_VALUE);
+        gridPane.add(textArea, 0, 0);
+
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Funciones");
+        alert.setHeaderText("Tus funciones");
+        alert.getDialogPane().setContent(gridPane);
+        String contentText = "";
+        if (!functionArray.isEmpty()) {
+            for (String function : functionArray) {
+                contentText = contentText + function + "\n";
+            }
+            textArea.setText(contentText);
+        }
+
+        else {
+            textArea.setText("No tienes funciones.");
+        }
+        alert.showAndWait();
+    }
+
+    private void deleteFunction(String input) {
+        int openBraceIndex = input.indexOf("(") + 1;
+        String function = input.substring(openBraceIndex, input.length() - 1);
+        if (functionArray.contains(function)) {
+            functionArray.remove(function);
+        }
+
+        else {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Función no encontrada");
+            alert.setContentText("La función " + function + " no se pudo borrar. Esto puede ser porque la función no existe.");
+
+            alert.showAndWait();
+        }
+
+
     }
 
     private Double evaluateFunction(TextField expField, String functionEval) {
         int expOpenBraceIndex = functionEval.indexOf("(");
         int expCloseBraceIndex = functionEval.indexOf(")");
         Object rawVariableNumbers[] = functionEval.substring(expOpenBraceIndex + 1, expCloseBraceIndex ).split(",");
-        System.out.println(functionEval.substring(expOpenBraceIndex + 1, expCloseBraceIndex));
         ArrayList variableNumbers = new ArrayList<Double>();
         Set variableNames;
         Map variables = new HashMap<String, Double>();
 
         for (Object variableNumber : rawVariableNumbers) {
-            System.out.println(variableNumber);
             Expression e = new ExpressionBuilder(variableNumber.toString())
                     .build();
             variableNumbers.add(e.evaluate());
@@ -152,9 +175,8 @@ public class Calculator {
                 if (function.substring(0, 1).equals(function.substring(0, 1))) {
                     String functionSplit[] = function.split("=");
                     String rawVariableNames[] = functionSplit[0].trim().substring(functionSplit[0].indexOf("(") + 1, functionSplit[0].indexOf(")")).split(",");
-                    variableNames = new HashSet<String>(Arrays.asList(rawVariableNames));
+                    variableNames = new HashSet<>(Arrays.asList(rawVariableNames));
                     for(String variableName : rawVariableNames) {
-                        System.out.println(variableName);
                     }
 
 
@@ -164,7 +186,6 @@ public class Calculator {
                             .variables(variableNames)
                             .build();
                     for(int i = 0; i < rawVariableNames.length; i++) {
-                        System.out.println("rawVariableNames length is: " + rawVariableNames.length + ". rawVariableNumbers length is: " + rawVariableNumbers.length);
                         variables.put(rawVariableNames[i], rawVariableNumbers[i]);
                     }
                     e.setVariables(variables);
@@ -179,14 +200,10 @@ public class Calculator {
 
             return ans;
 
-
-
-
     }
 
-    public void calculateExpressionWithMonos(TextField expField, String exp) {
+    public void calculateExpressionWithMonos(TextField expField, String monoExpression) {
         DecimalFormat df = new DecimalFormat("#.#####");
-        Scanner s = new Scanner(System.in);
         Pattern letterPattern = Pattern.compile("[a-zA-Z]+[^[\\d]+]?");
         Pattern numberPattern = Pattern.compile("[+-[*/]]?[0-9]");
 
@@ -195,8 +212,6 @@ public class Calculator {
         Hashtable<String, String> results = new Hashtable<String, String>();
         String result = "";
 
-        String monoExpression = exp;
-
         String monos[] = monoExpression.split("(?=[+-[*/]])");
 
 
@@ -204,7 +219,6 @@ public class Calculator {
         for (String mono : monos) {
 
             if (Character.toString(mono.charAt(0)).equals("-") && Character.toString(mono.charAt(1)).equals("(")) {
-                System.out.println("About to break with the following monomial: " + mono);
                 break;
 
             }
@@ -214,12 +228,10 @@ public class Calculator {
 
             if (letterMatcher.find()) {
 
-                System.out.println("Original Monomial: " + mono);
                 Pattern digitPattern = Pattern.compile("\\d");
                 Matcher digitMatcher = digitPattern.matcher(mono);
 
                 if (!digitMatcher.find()) {
-                    System.out.println("Digit not found.");
 
                     StringBuilder monoBuilder = new StringBuilder(mono);
 
@@ -230,14 +242,12 @@ public class Calculator {
 
                 String monoLetter = mono.substring(letterMatcher.start(), mono.length());
 
-                System.out.println("Letter of monomial: " + monoLetter);
             }
 
 
             if (numberMatcher.find() && letterMatcher.find()) {
                 String monoNumber = mono.substring(numberMatcher.start(), letterMatcher.start());
 
-                System.out.println("Number of monomial: " + monoNumber + "\n");
             }
 
             letterMatcher = letterPattern.matcher(mono);
@@ -259,27 +269,21 @@ public class Calculator {
 
             for (String mono : monosInSubtraction) {
 
-                System.out.println("Original mono in subtraction: " + mono);
                 mono = StringUtils.replaceEach(mono, new String[]{"+", "-"}, new String[]{"-", "+"});
                 if (!Character.toString(mono.charAt(0)).equals("+") && !Character.toString(mono.charAt(0)).equals("-")) {
                     mono = "-" + mono;
                 }
 
-                System.out.println("String in subtraction is: " + subtraction);
 
                 Matcher letterMatcher = letterPattern.matcher(mono);
                 Matcher numberMatcher = numberPattern.matcher(mono);
 
                 if (letterMatcher.find()) {
                     String monoLetter = mono.substring(letterMatcher.start(), mono.length());
-                    System.out.println("Monomial: " + mono);
-
-                    System.out.println("Letter of monomial: " + monoLetter);
                 }
 
                 if (numberMatcher.find()) {
                     String monoNumber = mono.substring(numberMatcher.start(), letterMatcher.start());
-                    System.out.println("Number of monomial: " + monoNumber + "\n");
                 }
 
                 monoMap.put(mono.substring(letterMatcher.start(), mono.length()), mono.substring(numberMatcher.start(), letterMatcher.start()));
@@ -288,7 +292,6 @@ public class Calculator {
 
 
         for (String monoLetter : monoMap.keySet()) {
-            System.out.println("Letter: " + monoLetter + " has numbers: " + monoMap.get(monoLetter).toString());
             Expression e = new ExpressionBuilder(monoMap.get(monoLetter).toString().replace(",", ""))
                     .build();
             if (e.evaluate() > 0) {
@@ -304,33 +307,41 @@ public class Calculator {
     }
 
     public void calculateExpression(TextField expField, String exp) {
-        ArrayList<Integer> xValues = new ArrayList<Integer>();
 
-        final Pattern varPattern = Pattern.compile("[a-zA-Z]");
+        final Pattern funcSavePattern = Pattern.compile("\\w+\\([a-zA-Z,]+\\)=[A-Za-z0-9-!$%^&*()+ {}|/~=`:'÷<>?,.]+");
+        final Pattern funcDeletePattern = Pattern.compile("del\\(.*\\)");
+
 
         Matcher funcSaveMatcher = funcSavePattern.matcher(exp);
-        Matcher funcEvalMatcher = funcEvalPattern.matcher(exp);
-
-        Matcher varMatcher = varPattern.matcher(exp);
-
-        Map<String, Integer> vars = new HashMap<String, Integer>();
+        Matcher funcDeleteMatcher = funcDeletePattern.matcher(exp);
 
         // Check if user selected function notation
         if (funcSaveMatcher.matches()) {
-            // funcNotationInput = funcField.getText().replaceAll("\\s+", "").trim();
             saveFunction(expField);
-        }
+        } else if (funcDeleteMatcher.matches()) {
+            deleteFunction(exp);
+            expField.setText("");
 
-
-        else {
+        } else {
 
 
             Expression e = new ExpressionBuilder(exp)
                     .build();
             double result = e.evaluate();
 
-            DecimalFormat df = new DecimalFormat("###.#######");
-            expField.setText(Double.toString(result));
+            String newResult = "";
+
+            if (result % 1 == 0) {
+                DecimalFormat decimalFormat = new DecimalFormat("0.#####");
+                newResult = decimalFormat.format(result);
+                expField.setText(newResult);
+
+            }
+
+            else {
+                expField.setText(Double.toString(result));
+            }
+
             ans = e.evaluate();
         }
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.image.*?>
 <?import com.jfoenix.controls.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
@@ -134,10 +135,13 @@
                   <Font name="Roboto Thin" size="36.0" />
                </font>
             </JFXButton>
-            <JFXButton fx:id="seven2" onAction="#displayTextOnAction" prefHeight="406.0" prefWidth="294.0" styleClass="calculator-button" text="log" GridPane.rowIndex="2">
+            <JFXButton fx:id="list" onAction="#list" prefHeight="406.0" prefWidth="294.0" styleClass="calculator-button" GridPane.rowIndex="2">
                <font>
                   <Font name="Roboto Thin" size="35.0" />
                </font>
+               <GridPane.margin>
+                  <Insets />
+               </GridPane.margin>
             </JFXButton>
             <JFXButton fx:id="seven11" onAction="#displayTextOnAction" prefHeight="406.0" prefWidth="294.0" styleClass="calculator-button" text="tan" GridPane.columnIndex="2" GridPane.rowIndex="3">
                <font>

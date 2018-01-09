@@ -4,10 +4,13 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class Main extends Application {
+
+
 
     @Override
     public void start(Stage stage) throws Exception{
@@ -15,6 +18,7 @@ public class Main extends Application {
                 Algelator.class.getResource("Roboto-Thin.ttf").toExternalForm(),
                 24
         );
+
 
         Parent root = FXMLLoader.load(Main.class.getResource("/sample/Calculator2.fxml"));
 
@@ -27,6 +31,7 @@ public class Main extends Application {
 
         stage.setMaxWidth(700);
         stage.setMaxHeight(520);
+
 
         stage.show();
     }

@@ -53,6 +53,10 @@
     -fx-graphic: url("img/icons8-clear_symbol_filled.png");
 }
 
+#list {
+    -fx-graphic: url("img/icons8-list.png");
+}
+
 
 
 .mainFxmlClass {
