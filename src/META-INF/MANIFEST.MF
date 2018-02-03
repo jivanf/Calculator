@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 Manifest-Version: 1.0
 Main-Class: sample.Main
 
+=======
+Manifest-Version: 1.0
+Main-Class: sample.Main
+
+>>>>>>> calculator-download/master

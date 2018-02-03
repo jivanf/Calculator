@@ -57,7 +57,10 @@ public class Calculator {
 
 
     public String filterExpression(String exp) {
-        final Pattern sciFunc = Pattern.compile("([(]+?[a-zA-z]+\\([a-zA-Z0-9^*+/#÷[(][)]]+[)]?)");
+        if (exp.isEmpty()) {
+            exp = "0";
+        }
+
 
         String filteredExp = exp.replaceAll("Ans", Double.toString(ans));
         filteredExp = filteredExp.replaceAll("Ran#", Double.toString(Math.random()));
@@ -93,14 +96,19 @@ public class Calculator {
             String splitI[] = i.split("=");
             if (splitFunction[0].substring(0, splitFunction[0].indexOf("(")).equals(splitI[0].substring(0, splitI[0].indexOf("(")))) {
                 Alert alert = new Alert(AlertType.CONFIRMATION);
-                alert.setTitle("Funciones");
-                alert.setHeaderText("Sobrescribir función");
+                alert.setTitle("Formulas");
+                alert.setHeaderText("Sobrescribir formula");
                 alert.setContentText("¿Estas seguro que quieres sobrescribir " + i + " con " + exp + " ?");
 
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.get() == ButtonType.OK){
                     this.functionArray.remove(i);
                 }
+
+                else {
+                    break;
+                }
+
 
 
             }
@@ -118,8 +126,8 @@ public class Calculator {
         gridPane.add(textArea, 0, 0);
 
         Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("Funciones");
-        alert.setHeaderText("Tus funciones");
+        alert.setTitle("Formulas");
+        alert.setHeaderText("Tus formulas");
         alert.getDialogPane().setContent(gridPane);
         String contentText = "";
         if (!functionArray.isEmpty()) {
@@ -130,7 +138,7 @@ public class Calculator {
         }
 
         else {
-            textArea.setText("No tienes funciones.");
+            textArea.setText("No tienes formulas.");
         }
         alert.showAndWait();
     }
@@ -145,8 +153,8 @@ public class Calculator {
         else {
             Alert alert = new Alert(AlertType.ERROR);
             alert.setTitle("Error");
-            alert.setHeaderText("Función no encontrada");
-            alert.setContentText("La función " + function + " no se pudo borrar. Esto puede ser porque la función no existe.");
+            alert.setHeaderText("Formula no encontrada");
+            alert.setContentText("La formula " + function + " no se pudo borrar. Esto puede ser porque la formula no existe.");
 
             alert.showAndWait();
         }
@@ -172,20 +180,21 @@ public class Calculator {
 
         for (String function : functionArray) {
 
-                if (function.substring(0, 1).equals(function.substring(0, 1))) {
+
+                if (function.substring(0, expOpenBraceIndex).equals(functionEval.substring(0, expOpenBraceIndex))) {
                     String functionSplit[] = function.split("=");
                     String rawVariableNames[] = functionSplit[0].trim().substring(functionSplit[0].indexOf("(") + 1, functionSplit[0].indexOf(")")).split(",");
                     variableNames = new HashSet<>(Arrays.asList(rawVariableNames));
-                    for(String variableName : rawVariableNames) {
-                    }
-
 
                     String expInput = functionSplit[1];
                     expInput = expInput.replaceAll("÷", "/");
+                    System.out.println("expInput is: " + expInput);
                     Expression e = new ExpressionBuilder(expInput)
                             .variables(variableNames)
                             .build();
                     for(int i = 0; i < rawVariableNames.length; i++) {
+
+                        System.out.println("Var Name: " + rawVariableNames[i] + "Value: " + rawVariableNumbers[i]);
                         variables.put(rawVariableNames[i], rawVariableNumbers[i]);
                     }
                     e.setVariables(variables);
@@ -198,6 +207,8 @@ public class Calculator {
                 }
             }
 
+
+        System.out.println(ans);
             return ans;
 
     }
@@ -209,11 +220,9 @@ public class Calculator {
 
         // key: monomial letter. value: monomial number
         Multimap<String, String> monoMap = ArrayListMultimap.create();
-        Hashtable<String, String> results = new Hashtable<String, String>();
         String result = "";
 
-        String monos[] = monoExpression.split("(?=[+-[*/]])");
-
+        String monos[] = monoExpression.split("(?=[+-])");
 
 
         for (String mono : monos) {
@@ -240,13 +249,6 @@ public class Calculator {
                     mono = monoBuilder.toString();
                 }
 
-                String monoLetter = mono.substring(letterMatcher.start(), mono.length());
-
-            }
-
-
-            if (numberMatcher.find() && letterMatcher.find()) {
-                String monoNumber = mono.substring(numberMatcher.start(), letterMatcher.start());
 
             }
 
@@ -278,15 +280,16 @@ public class Calculator {
                 Matcher letterMatcher = letterPattern.matcher(mono);
                 Matcher numberMatcher = numberPattern.matcher(mono);
 
-                if (letterMatcher.find()) {
-                    String monoLetter = mono.substring(letterMatcher.start(), mono.length());
+
+                if (letterMatcher.find() && numberMatcher.find()) {
+                    monoMap.put(mono.substring(letterMatcher.start(), mono.length()), mono.substring(numberMatcher.start(), letterMatcher.start()));
                 }
 
-                if (numberMatcher.find()) {
-                    String monoNumber = mono.substring(numberMatcher.start(), letterMatcher.start());
+                else {
+                    monoMap.put("", mono);
                 }
 
-                monoMap.put(mono.substring(letterMatcher.start(), mono.length()), mono.substring(numberMatcher.start(), letterMatcher.start()));
+
             }
         }
 
@@ -295,10 +298,9 @@ public class Calculator {
             Expression e = new ExpressionBuilder(monoMap.get(monoLetter).toString().replace(",", ""))
                     .build();
             if (e.evaluate() > 0) {
-                results.put((int) e.evaluate() + monoLetter, "+");
                 result = result + "+" + df.format(e.evaluate()) + monoLetter;
             } else {
-                results.put((int) e.evaluate() + monoLetter, "");
+
                 result = result + df.format(e.evaluate()) + monoLetter;
             }
         }

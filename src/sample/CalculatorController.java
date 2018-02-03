@@ -77,6 +77,12 @@ public class CalculatorController implements Initializable {
         }
 
 
+        else {
+            input.setText(input.getText() + ((Button) e.getSource()).getText());
+        }
+
+
+
 
     }
 
@@ -100,8 +106,9 @@ public class CalculatorController implements Initializable {
                 break;
         }
 
-        if (input.getSelection().getStart() == 0 && input.getSelection().getEnd() == 0 && event.getCode() == KeyCode.SHIFT) {
-            System.out.println("gesfji");
+
+        if (input.getSelection().getStart() == 0 && input.getSelection().getEnd() == 0) {
+
             input.setText(input.getText() + event.getText());
             switch (event.getCode()) {
                 case BACK_SPACE:
@@ -122,11 +129,27 @@ public class CalculatorController implements Initializable {
         String filteredExp = null;
         try {
             filteredExp = calculatorObj.filterExpression(input.getText());
-        } catch (Exception e) {
 
+            System.out.println(filteredExp);
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Expresión invalida");
+            alert.setContentText("Hubo un error con la expresión dada. Favor de intentar de nuevo.");
+            alert.showAndWait();
         }
         if (monoToggle.isSelected()) {
-            calculatorObj.calculateExpressionWithMonos(input, filteredExp);
+            try {
+                calculatorObj.calculateExpressionWithMonos(input, filteredExp);
+            }
+
+            catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("Expresión invalida");
+                alert.setContentText("Hubo un error con la expresión dada. Favor de intentar de nuevo.");
+                alert.showAndWait();
+            }
         }
 
         else {
@@ -135,7 +158,8 @@ public class CalculatorController implements Initializable {
             } catch (Exception e) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error");
-                alert.setHeaderText("Expresion invalida");
+                alert.setHeaderText("Expresión invalida");
+
                 alert.setContentText("Hubo un error con la expresión dada. Favor de intentar de nuevo.");
                 alert.showAndWait();
             }
